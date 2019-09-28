@@ -16,32 +16,19 @@
         <el-menu
           router
           unique-opened
+          :default-active="getActive"
           class="el-menu-vertical-demo"
           background-color="#545c64"
           text-color="#fff"
           active-text-color="#ffd04b">
-          <el-submenu index="1">
+          <el-submenu :index="l1.path" v-for="l1 in menu" :key="l1.id">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{l1.authName}}</span>
             </template>
-            <el-menu-item index="users">
+            <el-menu-item :index="l2.path" v-for="l2 in l1.children" :key="l2.id">
               <i class="el-icon-menu"></i>
-              <span slot="title">用户列表</span>
-            </el-menu-item>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item index="roles">
-              <i class="el-icon-menu"></i>
-              <span slot="title">角色列表</span>
-            </el-menu-item>
-            <el-menu-item index="rights">
-              <i class="el-icon-menu"></i>
-              <span slot="title">权限列表</span>
+              <span slot="title">{{l2.authName}}</span>
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -53,10 +40,29 @@
 
 <script>
 export default {
+  async created () {
+    const { meta, data } = await this.$axios.get('menus')
+    if (meta.status === 200) {
+      this.menu = data
+      console.log(data)
+    } else {
+      this.$message.error(meta.msg)
+    }
+  },
+  data () {
+    return {
+      menu: []
+    }
+  },
   methods: {
     logout () {
       localStorage.removeItem('token')
       this.$router.push('/login')
+    }
+  },
+  computed: {
+    getActive () {
+      return this.$route.path.slice(1)
     }
   }
 }

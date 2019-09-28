@@ -6,7 +6,7 @@
           <el-input placeholder="请输入用户名" v-model="form.username"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input placeholder="请输入密码" type="password" v-model="form.password"></el-input>
+          <el-input @keyup.enter.native="login" placeholder="请输入密码" type="password" v-model="form.password"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button @click="login" class="login-btn" type="primary">登录</el-button>
@@ -17,7 +17,6 @@
 </template>
 
 <script>
-import Axios from 'axios'
 export default {
   data () {
     return {
@@ -41,29 +40,28 @@ export default {
     reset () {
       this.$refs.form.resetFields()
     },
-    login () {
-      this.$refs.form.validate(state => {
-        if (state) {
-          Axios.post('http://localhost:8888/api/private/v1/login', this.form).then(res => {
-            const { meta, data } = res.data
-            if (meta.status === 200) {
-              localStorage.setItem('token', data.token)
-              this.$message({
-                type: 'success',
-                message: '登陆成功!',
-                duration: 2000
-              })
-              this.$router.push({ name: 'index' })
-            } else {
-              this.$message({
-                type: 'error',
-                message: meta.msg,
-                duration: 2000
-              })
-            }
+    async login () {
+      try {
+        await this.$refs.form.validate()
+        const { meta, data } = await this.$axios.post('login', this.form)
+        if (meta.status === 200) {
+          localStorage.setItem('token', data.token)
+          this.$message({
+            type: 'success',
+            message: '登陆成功!',
+            duration: 2000
+          })
+          this.$router.push({ name: 'index' })
+        } else {
+          this.$message({
+            type: 'error',
+            message: meta.msg,
+            duration: 2000
           })
         }
-      })
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 }
